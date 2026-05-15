@@ -1,2 +1,0 @@
-# webhooks
-webhooks for amocrm
