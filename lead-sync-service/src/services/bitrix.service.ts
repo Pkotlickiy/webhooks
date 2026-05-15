@@ -18,20 +18,37 @@ function buildBitrixLead(payload: WebhookLeadPayload): BitrixLead {
   return lead;
 }
 
+function buildRequestUrl(): string {
+  if (!config.bitrixRestMethod) {
+    return config.bitrixWebhookUrl;
+  }
+
+  const separator = config.bitrixWebhookUrl.endsWith('/') ? '' : '/';
+  return `${config.bitrixWebhookUrl}${separator}${config.bitrixRestMethod}`;
+}
+
 export async function sendLeadToBitrix(payload: WebhookLeadPayload): Promise<void> {
   const lead = buildBitrixLead(payload);
+  const url = buildRequestUrl();
 
-  const response = await fetch(config.bitrixWebhookUrl, {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (config.bitrixAuthToken) {
+    headers.Authorization = `Bearer ${config.bitrixAuthToken}`;
+  }
+
+  const body = config.bitrixRestMethod === 'crm.lead.add' ? { fields: lead } : payload;
+
+  const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.bitrixAuthToken}`,
-    },
-    body: JSON.stringify({ fields: lead }),
+    headers,
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Bitrix request failed: ${response.status} ${body}`);
+    const responseBody = await response.text();
+    throw new Error(`Bitrix request failed: ${response.status} ${responseBody}`);
   }
 }

@@ -49,5 +49,13 @@ npm start
 
 ## Endpoints
 
-- `POST /webhook/lead` — receives lead webhooks and forwards them to Bitrix24.
+- `POST /webhook/lead` — receives lead webhooks and forwards them to the configured Bitrix24 REST webhook.
 - `GET /` — health check.
+
+## Configuration
+
+Use `.env` or environment variables to configure the target Bitrix24 webhook:
+
+- `BITRIX_WEBHOOK_URL` or `BITRIX_REST_URL` — base Webhook URL, for example `https://urakcept.bitrix24.ru/rest/1/fx00xfz9x9l434fh/`
+- `BITRIX_REST_METHOD` — optional Bitrix24 REST method to append, e.g. `crm.lead.add`
+- `BITRIX_AUTH_TOKEN` — optional bearer token if your endpoint requires authorization

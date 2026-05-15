@@ -1,4 +1,3 @@
-import { WebhookLeadPayload } from '../types';
 import { normalizePhone } from '../utils/phone';
 
 export function validateWebhookPayload(payload: any): { valid: boolean; error?: string } {
