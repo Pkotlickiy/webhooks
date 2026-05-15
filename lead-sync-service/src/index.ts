@@ -2,28 +2,10 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { createLogger, transports, format } from 'winston';
 
 import { config } from './config';
 import webhookRouter from './routes/webhook';
-
-// === Настройка логгера ===
-export const logger = createLogger({
-  level: config.LOG_LEVEL,
-  format: format.combine(
-    format.timestamp(),
-    format.errors({ stack: true }),
-    format.json()
-  ),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.simple()
-      ),
-    }),
-  ],
-});
+import { logger } from './logger';
 
 // === Инициализация Express ===
 const app = express();

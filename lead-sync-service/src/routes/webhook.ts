@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { incomingLeadSchema, IncomingLead, ApiResponse } from '../types';
 import { validateWebhookKey } from '../services/validator';
 import { bitrixService } from '../services/bitrix.service';
-import { logger } from '../index';
+import { logger } from '../logger';
 
 const router = Router();
 

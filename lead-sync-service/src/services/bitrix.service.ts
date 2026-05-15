@@ -2,15 +2,15 @@ import axios, { AxiosInstance } from 'axios';
 import { config } from '../config';
 import { IncomingLead, BitrixLeadPayload, BitrixApiResponse } from '../types';
 import { normalizePhone, parseFullName } from './validator';
-import { logger } from '../index';
+import { logger } from '../logger';
 
 export class BitrixService {
-  private client: AxiosInstance;
+  private client?: AxiosInstance;
 
   constructor() {
     if (!config.BITRIX24_WEBHOOK_URL) {
-      logger.error('❌ BITRIX24_WEBHOOK_URL is not configured');
-      throw new Error('Bitrix24 webhook URL required');
+      logger.warn('⚠️ BITRIX24_WEBHOOK_URL is not configured; lead forwarding to Bitrix24 will be disabled');
+      return;
     }
 
     this.client = axios.create({
@@ -100,6 +100,11 @@ export class BitrixService {
    * Отправка лида в Bitrix24
    */
   async createLead(lead: IncomingLead): Promise<number> {
+    if (!this.client) {
+      logger.error('❌ Bitrix service is not configured: BITRIX24_WEBHOOK_URL missing');
+      throw new Error('Bitrix24 webhook URL required');
+    }
+
     const payload = this.mapToBitrixFormat(lead);
     
     logger.info(`📤 Sending lead ${lead.id} to Bitrix24`, { 
