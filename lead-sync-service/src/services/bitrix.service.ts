@@ -29,22 +29,43 @@ export class BitrixService {
   private mapToBitrixFormat(lead: IncomingLead): BitrixLeadPayload {
     const { name, lastName } = parseFullName(lead.name);
     
-    // Формирование заголовка
+    // Формирование заголовка (TITLE) - обязательно включаем категорию для наглядности
     const titleParts: string[] = [];
-    if (lead.category) titleParts.push(`[${lead.category}]`);
+    if (lead.category) {
+      titleParts.push(`[${lead.category}]`);
+    }
     titleParts.push(lead.type === 'Auction' ? '🔨 Аукцион' : '📅 Запись');
     titleParts.push(`${lead.region} • ${lead.price}₽`);
 
-    // Комментарии
+    // Комментарии (COMMENTS) - сюда пишем ВСЮ детальную информацию
     const comments: string[] = [];
-    if (lead.text) comments.push(`📝 ${lead.text}`);
-    comments.push(`🆔 Источник: ID=${lead.id}, тип=${lead.type}`);
-    comments.push(`🌍 Регион: ${lead.region} (ID: ${lead.region_id})`);
+    
+    // 1. Текст заявки (самое важное)
+    if (lead.text && lead.text.trim()) {
+      comments.push('═══════════════════════════════════');
+      comments.push('📝 ТЕКСТ ЗАЯВКИ ОТ КЛИЕНТА:');
+      comments.push(lead.text);
+      comments.push('═══════════════════════════════════');
+    }
+    
+    // 2. Детали категории
+    if (lead.category) {
+      comments.push(`📂 Категория: ${lead.category}`);
+    }
     if (lead.category_id) {
-      comments.push(`📂 Категория ID: ${lead.category_id}`);
+      comments.push(`🆔 ID Категории: ${lead.category_id}`);
+    }
+    
+    // 3. Техническая информация
+    comments.push(`-----------------------------------`);
+    comments.push(`🆔 ID в источнике: ${lead.id}`);
+    comments.push(`🌐 Тип лида: ${lead.type}`);
+    comments.push(`🌍 Регион: ${lead.region} (ID: ${lead.region_id})`);
+    if (lead.phone) {
+      comments.push(`📞 Телефон: ${lead.phone}`);
     }
 
-    // Телефон
+    // Телефон для стандартного поля
     const phoneField = lead.phone 
       ? [{ VALUE: normalizePhone(lead.phone), VALUE_TYPE: 'WORK' }] 
       : [];
@@ -60,14 +81,15 @@ export class BitrixService {
         STATUS_ID: config.BITRIX24_DEAL_STAGE,
         COMMENTS: comments.join('\n'),
         SOURCE_ID: 'OTHER',
-        SOURCE_DESCRIPTION: `${lead.type} | ${lead.category || 'Без категории'}`,
-        CATEGORY_ID: lead.category_id,
+        // В описание источника дублируем тип и категорию для быстрого просмотра в списке
+        SOURCE_DESCRIPTION: `${lead.type}${lead.category ? ` | ${lead.category}` : ''}`,
+        CATEGORY_ID: lead.category_id, // Стандартное поле привязки к категории (если используется в Битриксе)
         OPENED: 'Y',
         ORIGINATOR_ID: 'external_lead_webhook',
         ORIGIN_ID: `src_${lead.id}_type_${lead.type}`,
-        // Пользовательские поля (если созданы в вашем портале)
+        // Пользовательские поля (только если они точно созданы в вашем портале)
+        // Мы дублируем регион, так как это частый кейс, но text/category теперь надежно в COMMENTS
         UF_CRM_REGION: lead.region,
-        UF_CRM_EXTERNAL_TYPE: lead.type,
       },
       params: {
         REGISTER_SONET_EVENT: 'Y',
