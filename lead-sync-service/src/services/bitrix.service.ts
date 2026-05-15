@@ -42,10 +42,9 @@ export class BitrixService {
     
     // 1. Текст заявки (самое важное)
     if (lead.text && lead.text.trim()) {
-      comments.push('═══════════════════════════════════');
-      comments.push('📝 ТЕКСТ ЗАЯВКИ ОТ КЛИЕНТА:');
+      comments.push('--- ТЕКСТ ЗАЯВКИ ---');
       comments.push(lead.text);
-      comments.push('═══════════════════════════════════');
+      comments.push('---------------------');
     }
     
     // 2. Детали категории
