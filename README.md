@@ -1,2 +1,2 @@
 # webhooks
-webhooks for amocrm
+webhooks for bitrix24 Gainet
