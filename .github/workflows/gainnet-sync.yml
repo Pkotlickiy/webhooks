@@ -1,0 +1,33 @@
+name: Gainnet Lead Sync
+
+on:
+  schedule:
+    # Запуск каждые 5 минут (формат Cron: минута час день месяц день-недели)
+    # В часовом поясе UTC. Если нужно МСК, добавьте 3 часа к текущему времени или используйте cron "*/5 * * * *"
+    - cron: '*/5 * * * *'
+  
+  # Возможность запустить вручную через вкладку Actions в GitHub
+  workflow_dispatch:
+
+jobs:
+  sync-leads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync Endpoint
+        run: |
+          echo "Starting Gainnet sync..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.SYNC_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"limit": 20, "leadStatus": "101"}')
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "Response Body: $BODY"
+          
+          if [ "$HTTP_CODE" -ne 200 ] && [ "$HTTP_CODE" -ne 201 ]; then
+            echo "Error: Sync failed with status $HTTP_CODE"
+            exit 1
+          else
+            echo "Success: Sync completed."
+          fi
