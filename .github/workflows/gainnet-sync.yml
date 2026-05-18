@@ -18,6 +18,7 @@ jobs:
           echo "Starting Gainnet sync..."
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.SYNC_URL }}" \
             -H "Content-Type: application/json" \
+            -H "x-webhook-key: ${{ secrets.WEBHOOK_SECRET_KEY }}" \
             -d '{"limit": 20, "leadStatus": "101"}')
           
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)

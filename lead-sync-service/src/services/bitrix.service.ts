@@ -28,24 +28,18 @@ export class BitrixService {
    */
   private mapToBitrixFormat(lead: IncomingLead): BitrixLeadPayload {
     const { name, lastName } = parseFullName(lead.name);
-    
-    // Формирование заголовка (TITLE): "Имя - Категория"
     const titleParts: string[] = [];
-    if (lead.name) {
-      titleParts.push(lead.name);
-    } else {
-      titleParts.push('Клиент');
-    }
+    const titleName = lead.name?.trim() || lead.phone?.trim() || 'Клиент';
+    titleParts.push(titleName);
     if (lead.category) {
       titleParts.push('- ' + lead.category);
     }
 
-    // Комментарии (COMMENTS)
     const comments: string[] = [];
-    
-    // 1. Текст заявки (чистый, без префиксов)
     if (lead.text && lead.text.trim()) {
       comments.push(lead.text);
+    } else {
+      comments.push('⚠️ Текст заявки отсутствует');
     }
     
     // 2. Детали категории
